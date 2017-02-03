@@ -1,0 +1,11 @@
+
+run_tokenizer.sh -> to run the tokenizer
+
+diff tokenized_result.txt testfile_tokenized_ok.txt > tee differences.txt -> to see the difference betweeen the two files.
+
+wc -l differences.txt -> to see the number of remaining different line
+
+
+
+sh run_tokenizer.sh; diff tokenized_result.txt testfile_tokenized_ok.txt > differences.txt ; wc -l differences.txt 
+
