@@ -1,0 +1,11 @@
+- dictionary: it is a map between the terms and the documents where these terms appeared.
+
+- term -> word
+
+- posting -> document that the term appeared in, and sometime the position in that document
+
+- the dictionary actually is a hashtable contains terms and their positings list
+
+- dictionary keys sorted alphabitically and postings sorted by documents IDs
+
+
