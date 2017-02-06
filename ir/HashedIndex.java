@@ -12,7 +12,7 @@ package ir;
 
 import java.util.HashMap;
 import java.util.Iterator;
-
+import java.util.ArrayList;
 
 /**
  * Implements an inverted index as a Hashtable from words to PostingsLists.
@@ -82,12 +82,90 @@ public class HashedIndex implements Index {
         //
         //  REPLACE THE STATEMENT BELOW WITH YOUR CODE
         //
-        System.out.println("index size "+ index.size());
 
-        String token = query.terms.get(0);
-        return index.get(token);
+        // if query has more than one term
+
+        PostingsList result = null;
+
+        // intersection with more than one term
+        if(query.terms.size()>1 && queryType == Index.INTERSECTION_QUERY){
+
+            ArrayList<PostingsList> termsPositngsList = new ArrayList<PostingsList>();
+
+            for (String term: query.terms) {
+                if(index.get(term) == null)
+                    return null;
+
+                termsPositngsList.add(index.get(term));
+            }
+
+            if(termsPositngsList.size() >1)
+                result = compareGroupOfPostingsLists(termsPositngsList);
+
+            return result;
+
+        }
+
+        if(query.terms.size() ==1){
+            String token = query.terms.get(0);
+            return index.get(token);
+        }
+
+        return null;
+
     }
 
+    public PostingsList compareGroupOfPostingsLists(ArrayList<PostingsList> postingsListCollection){
+
+        PostingsList result;
+
+        System.out.println("hell" +postingsListCollection.size());
+
+        if(postingsListCollection.size() == 2){
+             result = compareTwoLists(postingsListCollection.get(0), postingsListCollection.get(1));
+        }else {
+            ArrayList<PostingsList> tempResult = new ArrayList<PostingsList>();
+
+            int i;
+            if(postingsListCollection.size()%2 == 0){
+                i=0;
+            }else{
+                tempResult.add(postingsListCollection.get(0));
+                i =1;
+            }
+
+            for (i=i; i+1< postingsListCollection.size(); i +=2){
+
+                tempResult.add(compareTwoLists(postingsListCollection.get(i),postingsListCollection.get(i+1)));
+            }
+            result = compareGroupOfPostingsLists(tempResult);
+        }
+
+
+        return result;
+    }
+    public PostingsList compareTwoLists(PostingsList firstList, PostingsList secondList){
+        PostingsList result = new PostingsList();
+
+        int i=0, j=0;
+
+        while(i<firstList.size() && j< secondList.size()){
+
+            if(firstList.get(i).docID == secondList.get(j).docID){
+                result.addEntry(firstList.get(i));
+                i++;
+                j++;
+            }else{
+                if(firstList.get(i).docID < secondList.get(j).docID){
+                    i++;
+                }else{
+                    j++;
+                }
+            }
+        }
+
+        return result;
+    }
 
     /**
      * No need for cleanup in a HashedIndex.
