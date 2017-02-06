@@ -1,7 +1,7 @@
-/*  
+/*
  *   This file is part of the computer assignment for the
  *   Information Retrieval course at KTH.
- * 
+ *
  *   First version:  Johan Boye, 2010
  *   Second version: Johan Boye, 2012
  *   Third version:  Johan Boye, 2016
@@ -114,7 +114,7 @@ public class Indexer {
                     while (tok.hasMoreTokens()) {
                         String token = tok.nextToken();
                         insertIntoIndex(docID, token, offset++);
-                        System.out.println("token "+token);
+                        System.out.println("token "+token+ " file: "+ f.getPath());
 
                     }
                     index.docLengths.put("" + docID, offset);
@@ -129,7 +129,7 @@ public class Indexer {
         }
     }
 
-    
+
     /* ----------------------------------------------- */
 
 
@@ -159,4 +159,3 @@ public class Indexer {
         index.insert(token, docID, offset);
     }
 }
-
