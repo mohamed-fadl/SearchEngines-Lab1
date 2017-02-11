@@ -10,82 +10,31 @@
 
 // [a-zA-Z] [a-zA-Z0-9]
 
+// 1- starting with + or '
+
+^[+][0-9]+
+^['][a-zA-Z]{2}$
+
+// 2- double dashes
+[-]{2}
+
+// 3- Emails
+
+^[a-zA-Z0-9_\.]+[@][a-zA-Z0-9_\.]+$
+
+// 4- Twenty-four seven
+
+  \d+/\d+
+
+// 5- websites
+
+  (?=[(])*(.)*:\/\/(.)*(?=[)])*
 
 
-//websites
-
-(?=[(])*(.)*:\/\/(.)*(?=[)])*
-
-
-used(?=(\-\-)*)
-
-^(?:(.*))\-\-
-
-// Twenty-four seven
-\d+/\d+
-
-// ADD YOUR PATTERNS HERE
+// 6- shorthands
+  [a-zA-Z]\.[a-zA-Z]\.
 
 
-[a-zA-Z]+-[a-zA-Z]+
+// 7- separated words
 
-
-//emails
-[_A-Za-z0-9-]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})
-
-
-
-//weird
-[a-z0-9A-Z]+(?=[!]+)
-
-// shorthands
-[a-z]\.([a-z]\.)+
-
-
-
-[0-9]+s
-
-[0-9]+\-([0-9]+(\-)*)+
-
-
-\+[0-9]+
-
-
-[0-9]+\-([0-9]+|x)*
-
-
-^([a-z0-9]+)((?=,$)|(?=\.$)|(?=\:$)|(?=_$))*
-
-[0-9]+:([0-9]+(:)*)*
-
-^[a-zA-Z]+(?=(\-|\.|\?)*$)
-
-
-
-
-// separeated letters
-^[A-Za-z]+((\-|')*([A-Za-z])*)*$
-
-
-
-^(')[A-Za-z]+$
-
-[A-Za-z]+[\-]+(\n)*
-
-
-
-(?=\^)[a-z0-9A-Z]+(?=.*)(?=\$)
-
-
-// numbers and characters separated by dots
-[A-Za-z0-9]+\.[A-Za-z0-9]+(((\.)([A-Za-z0-9]+))*|(\.))
-
-// separated numbers
-^[0-9]+((\.|\-|,)*([A-Za-z0-9])*)*$
-
-
-
-^(?=\()*[a-z]+(?=\))*$
-
-
-
+  [a-zA-Z0-9]+(([^a-zA-Z0-9\[\(])*[a-zA-Z0-9]+)*
