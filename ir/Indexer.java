@@ -114,8 +114,6 @@ public class Indexer {
                     while (tok.hasMoreTokens()) {
                         String token = tok.nextToken();
                         insertIntoIndex(docID, token, offset++);
-                        System.out.println("token "+token+ " file: "+ f.getPath());
-
                     }
                     index.docLengths.put("" + docID, offset);
                     reader.close();

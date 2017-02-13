@@ -196,6 +196,7 @@ public class SearchGUI extends JFrame {
                 // (this might corrupt the index).
 
                 synchronized (indexLock) {
+
                     results = indexer.index.search(query, queryType, rankingType, structureType);
 
                     //System.out.println("search results size" + results.size());
@@ -205,11 +206,14 @@ public class SearchGUI extends JFrame {
                     buf.append("\nFound " + results.size() + " matching document(s)\n\n");
                     for (int i = 0; i < results.size(); i++) {
                         buf.append(" " + i + ". ");
-                        String filename = indexer.index.docIDs.get("" + results.get(i).docID);
+                        String filename = indexer.index.docIDs.get("" + results.get(i).doc.docID);
+                        String position = indexer.index.docIDs.get("" + results.get(i).doc.getPositionsList().size());
+
                         if (filename == null) {
-                            buf.append("" + results.get(i).docID);
+                            buf.append("" + results.get(i).doc.docID);
                         } else {
                             buf.append(filename);
+
                         }
                         if (queryType == Index.RANKED_QUERY) {
                             buf.append("   " + String.format("%.5f", results.get(i).score));
@@ -251,9 +255,9 @@ public class SearchGUI extends JFrame {
                     buf.append("\nFound " + results.size() + " matching document(s)\n\n");
                     for (int i = 0; i < results.size(); i++) {
                         buf.append(" " + i + ". ");
-                        String filename = indexer.index.docIDs.get("" + results.get(i).docID);
+                        String filename = indexer.index.docIDs.get("" + results.get(i).doc.docID);
                         if (filename == null) {
-                            buf.append("" + results.get(i).docID);
+                            buf.append("" + results.get(i).doc.docID);
                         } else {
                             buf.append(filename);
                         }
@@ -356,7 +360,7 @@ public class SearchGUI extends JFrame {
 
     /**
      * Calls the indexer to index the chosen directory structure.
-     * Access to the index is synchronized since we don't want to
+     * Access to the index is synchronized since we don't sewant to
      * search at the same time we're indexing new files (this might
      * corrupt the index).
      */

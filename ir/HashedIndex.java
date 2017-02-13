@@ -24,6 +24,7 @@ public class HashedIndex implements Index {
      */
     private HashMap<String, PostingsList> index = new HashMap<String, PostingsList>();
 
+    private boolean isWholePhraseExist = false;
 
     /**
      * Inserts this token in the index.
@@ -33,19 +34,24 @@ public class HashedIndex implements Index {
         if (index.containsKey(token)) {
             PostingsList existingList = index.get(token);
 
-            PostingsEntry entry = new PostingsEntry(docID, 0);
-            existingList.addEntry(entry);
+            PostingsEntry entry = new PostingsEntry(docID, offset,0);
+            if(existingList.containEntry(entry)){
+                PostingsEntry currentEntry =existingList.getEntryByID(entry);
+                currentEntry.doc.addPosition(offset);
+            }else{
+                existingList.addEntry(entry);
+            }
+
         } else {
 
             PostingsList list = new PostingsList();
-            PostingsEntry entry = new PostingsEntry(docID, 0);
+            PostingsEntry entry = new PostingsEntry(docID,offset, 0);
 
             list.addEntry(entry);
             index.put(token, list);
 
         }
 
-        System.out.println("inserted and the new size is "+index.size());
     }
 
     public int size() {
@@ -56,10 +62,8 @@ public class HashedIndex implements Index {
      * Returns all the words in the index.
      */
     public Iterator<String> getDictionary() {
-        //
-        //  REPLACE THE STATEMENT BELOW WITH YOUR CODE
-        //
-        return null;
+
+        return index.keySet().iterator();
     }
 
 
@@ -85,6 +89,7 @@ public class HashedIndex implements Index {
 
         // if query has more than one term
 
+        System.out.println("\nnew search results\n#########################\n\n");
         PostingsList result = null;
 
         // intersection with more than one term
@@ -106,6 +111,25 @@ public class HashedIndex implements Index {
 
         }
 
+        // intersection with more than one term
+        if(query.terms.size()>1 && queryType == Index.PHRASE_QUERY){
+
+            ArrayList<PostingsList> termsPositngsList = new ArrayList<PostingsList>();
+
+            for (String term: query.terms) {
+                if(index.get(term) == null)
+                    return null;
+
+                termsPositngsList.add(index.get(term));
+            }
+
+            if(termsPositngsList.size() >1)
+                result = compareGroupOfPostingsListsPhrase(termsPositngsList);
+
+            return result;
+
+        }
+
         if(query.terms.size() ==1){
             String token = query.terms.get(0);
             return index.get(token);
@@ -118,8 +142,6 @@ public class HashedIndex implements Index {
     public PostingsList compareGroupOfPostingsLists(ArrayList<PostingsList> postingsListCollection){
 
         PostingsList result;
-
-        System.out.println("hell" +postingsListCollection.size());
 
         if(postingsListCollection.size() == 2){
              result = compareTwoLists(postingsListCollection.get(0), postingsListCollection.get(1));
@@ -144,6 +166,60 @@ public class HashedIndex implements Index {
 
         return result;
     }
+
+    public PostingsList compareGroupOfPostingsListsPhrase(ArrayList<PostingsList> postingsListCollection){
+
+        PostingsList result;
+
+        isWholePhraseExist = true;
+
+        if(postingsListCollection.size() == 2){
+
+            result = compareTwoListsPhrase(postingsListCollection.get(0), postingsListCollection.get(1),1);
+        }else {
+            ArrayList<PostingsList> tempResult = new ArrayList<PostingsList>();
+
+            for (int i=0; i+1< postingsListCollection.size(); i++){
+
+                tempResult.add(compareTwoListsPhrase(postingsListCollection.get(i),postingsListCollection.get(i+1),1));
+                System.out.format("compared %s times\n", tempResult.size());
+            }
+            result = unionOfEntries(tempResult);
+
+        }
+
+
+            return result;
+
+        //return null;
+    }
+
+    public PostingsList unionOfEntries(ArrayList<PostingsList> postings){
+
+        PostingsList result = new PostingsList();
+
+        for(int i=0; i<postings.size();i++){
+            for(int k=0;k<postings.get(0).size();k++){
+
+                PostingsEntry entry = postings.get(0).get(k);
+                boolean entryIsInEveryList = true;
+
+                for(int j=1; j<postings.size();j++){
+                    if(!postings.get(j).containEntry(entry)){
+                        entryIsInEveryList = false;
+                        break;
+                    }
+                }
+
+                if(entryIsInEveryList){
+                    result.addEntry(entry);
+                }
+            }
+
+        }
+
+        return result;
+    }
     public PostingsList compareTwoLists(PostingsList firstList, PostingsList secondList){
         PostingsList result = new PostingsList();
 
@@ -151,12 +227,12 @@ public class HashedIndex implements Index {
 
         while(i<firstList.size() && j< secondList.size()){
 
-            if(firstList.get(i).docID == secondList.get(j).docID){
+            if(firstList.get(i).doc.docID == secondList.get(j).doc.docID){
                 result.addEntry(firstList.get(i));
                 i++;
                 j++;
             }else{
-                if(firstList.get(i).docID < secondList.get(j).docID){
+                if(firstList.get(i).doc.docID < secondList.get(j).doc.docID){
                     i++;
                 }else{
                     j++;
@@ -167,6 +243,70 @@ public class HashedIndex implements Index {
         return result;
     }
 
+    public PostingsList compareTwoListsPhrase(PostingsList firstList, PostingsList secondList,int offset){
+        PostingsList result = new PostingsList();
+
+        int i=0, j=0;
+
+        while(i<firstList.size() && j< secondList.size()) {
+
+            // terms positions in this document
+            Document firstDocument = firstList.get(i).doc;
+            Document secondDocument = secondList.get(j).doc;
+
+            boolean isPhraseExist = false;
+
+            if (firstDocument.docID == secondDocument.docID) {
+                System.out.println("first word positions "+firstDocument.positions.toString());
+                System.out.println("second word positions "+secondDocument.positions.toString());
+
+                int k = 0, l = 0;
+
+
+                while (k < firstDocument.positions.size() && l < secondDocument.positions.size()) {
+                    int firstTermPosition = firstDocument.positions.get(k);
+                    int secondTermPosition = secondDocument.positions.get(l);
+
+                    if ((secondTermPosition - firstTermPosition) == offset) {
+                        isPhraseExist = true;
+                        break;
+                    } else {
+                        if (firstTermPosition == secondTermPosition) {
+                            k++;
+                            l++;
+                        }
+                        if ((secondTermPosition - firstTermPosition) < offset) {
+                            l++;
+                        }
+
+                        if ((secondTermPosition - firstTermPosition) > offset) {
+                            k++;
+                        }
+                    }
+
+                }
+
+            }
+
+            if (isPhraseExist) {
+                System.out.println("found phrase");
+                result.addEntry(firstList.get(i));
+                i++;
+                j++;
+            } else {
+                if (firstList.get(i).doc.docID < secondList.get(j).doc.docID) {
+                    i++;
+                } else {
+                    j++;
+                }
+            }
+        }
+//        if (result.size() == 0) {
+//            isWholePhraseExist = false;
+//            return null;
+//        }
+        return result;
+    }
     /**
      * No need for cleanup in a HashedIndex.
      */

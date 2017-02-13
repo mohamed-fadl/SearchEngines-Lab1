@@ -32,11 +32,28 @@ public class PostingsList implements Serializable {
 
     public LinkedList<PostingsEntry> getWholeList(){
 
+        // return the uniqe values
         return list;
 
     }
+
+    public PostingsEntry getEntryByID(PostingsEntry entry){
+        int index = list.indexOf(entry);
+
+        return get(index);
+    }
+
+
+    public boolean containEntry(PostingsEntry entry){
+        return list.contains(entry);
+    }
     public void addEntry(PostingsEntry postingEntry){
-        list.add(postingEntry);
+        if(!list.contains(postingEntry)){
+            list.add(postingEntry);
+        }else {
+            System.out.println("found existing value");
+
+        }
     }
 }
 	
